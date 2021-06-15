@@ -11,19 +11,16 @@ const app = express();
 //Puerto configurado en .env
 const port = process.env.PORT;
 
-app.all('/is_alive/', (req, res) => {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
+app.all('/', (req, res) => {
+    console.log(`Method [${ req.method }] with params ` +
+        `[${ JSON.stringify(req.query) }]`);
 
-    console.log(`Method [${ req.method }] with params [${ JSON.stringify(req.query) }]`);
-
-    const alive = {
+    res.set('content-type', 'application/json');
+    res.send({
         id: 0,
-        alive: true,
+        msg: 'Welcome back my friend to the show that never ends...',
         face: ':)'
-    };
-
-    res.write(JSON.stringify(alive));
-    res.end();
+    });
 });
 
 app.get('/call_example/', async (req, res) => {
@@ -33,44 +30,38 @@ app.get('/call_example/', async (req, res) => {
             'param2': -15235.86
         };
         const instance = axios.create({
-            baseURL: `http://localhost:${ port }/is_alive`,
+            baseURL: `http://localhost:${ port }/`,
             params
         });
 
         const resp = await instance.post();
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
 
         const resp_json = {
             id: 0,
             face: resp.data.face
         };
 
-        res.write(JSON.stringify(resp_json));
-        res.end();
+        res.set('content-type', 'application/json');
+        res.send(resp_json);
     } catch (error) {
         console.log({error});
-        res.writeHead(500, { 'Content-Type': 'application/json' });
         const resp_json = {
             id: -1,
             msg: `Error: [${error}]`
         };
 
-        res.write(JSON.stringify(resp_json));
-        res.end();
+        res.set('content-type', 'application/json');
+        res.send(resp_json);
     }
 })
 
 app.all('*', (req, res) => {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-
-    not_found = {
+    res.set('content-type', 'application/json');
+    res.send({
         id: -1,
-        msg: `404 | Context not found or not implemented yet [${ req.url }] for method [${ req.method }]`
-    };
-
-    res.write(JSON.stringify(not_found));
-    res.end();
+        msg: `404 | Context [${ req.url }] not found or not ` +
+             `implemented yet for method [${ req.method }]`
+    });
 });
 
 app.listen(port, () => {
